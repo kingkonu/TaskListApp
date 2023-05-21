@@ -8,9 +8,11 @@
 import UIKit
 import CoreData
 
+
 final class TaskListViewController: UITableViewController {
-    private let viewContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    
+    private let viewContext = StorageManager.shared.persistentContainer.viewContext
+    private let storageManager = StorageManager.shared
+
     private let cellID = "cell"
     private var taskList: [Task] = []
 
@@ -34,6 +36,16 @@ final class TaskListViewController: UITableViewController {
         content.text = task.title
         cell.contentConfiguration = content
         return cell
+    }
+
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let commit = taskList[indexPath.row]
+            viewContext.delete(commit)
+            taskList.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            storageManager.saveContext()
+        }
     }
 
     @objc private func addNewTask() {
@@ -69,10 +81,10 @@ final class TaskListViewController: UITableViewController {
         let task = Task(context: viewContext)
         task.title = taskName
         taskList.append(task)
-        
+
         let indexPath = IndexPath(row: taskList.count - 1, section: 0)
         tableView.insertRows(at: [indexPath], with: .automatic)
-        
+
         if viewContext.hasChanges {
             do {
                 try viewContext.save()
@@ -82,6 +94,7 @@ final class TaskListViewController: UITableViewController {
         }
         dismiss(animated: true)
     }
+
 }
 
 // MARK: - SetupUI
