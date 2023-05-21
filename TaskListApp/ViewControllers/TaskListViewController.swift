@@ -6,8 +6,6 @@
 //
 
 import UIKit
-import CoreData
-
 
 final class TaskListViewController: UITableViewController {
     private let viewContext = StorageManager.shared.persistentContainer.viewContext
